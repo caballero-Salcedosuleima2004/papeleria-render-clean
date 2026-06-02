@@ -18,9 +18,14 @@ def crear_tablas_automaticas():
         conexion = conectar_bd()
         cursor = conexion.cursor()
         
-        # 🔥 EL ELIMINADOR MÁGICO: Esto borrará la tabla incompleta para que se cree la nueva con imágenes
+        # 🔥 ELIMINADOR MASIVO: Borra absolutamente todo lo viejo para corregir los errores de columnas
         cursor.execute("DROP TABLE IF EXISTS detalle_ventas CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS ventas CASCADE;")
         cursor.execute("DROP TABLE IF EXISTS productos CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS empleados CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS clientes_web CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS proveedores CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS categorias CASCADE;")
         
         # 1. Tabla: Categorias
         cursor.execute("""
@@ -29,7 +34,7 @@ def crear_tablas_automaticas():
                 nombre_categoria VARCHAR(50) NOT NULL
             );
         """)
-        
+
         # 2. Tabla de Clientes Web
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes_web (
@@ -40,7 +45,7 @@ def crear_tablas_automaticas():
             );
         """)
 
-        # 3. Tabla de Empleados
+        # 3. Tabla de Empleados (Con la columna id_empleado correcta)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS empleados (
                 id_empleado INT PRIMARY KEY,
@@ -61,7 +66,7 @@ def crear_tablas_automaticas():
             );
         """)
 
-        # 5. Tabla de Productos (Estructura extendida con IMAGEN)
+        # 5. Tabla de Productos
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS productos (
                 id_producto INT PRIMARY KEY,
@@ -74,7 +79,7 @@ def crear_tablas_automaticas():
                 precio_venta_actual NUMERIC(10, 2) NOT NULL,
                 estado INT NOT NULL,
                 id_categoria INT NOT NULL,
-                imagen_url VARCHAR(255) DEFAULT '/static/images/default.png',
+                imagen_url VARCHAR(255) DEFAULT 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400',
                 FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria)
             );
         """)
@@ -106,82 +111,64 @@ def crear_tablas_automaticas():
         # --- 📥 INSERTAR DATOS REQUERIDOS ---
 
         # Insertar Categorias
-        cursor.execute("SELECT COUNT(*) FROM categorias;")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                INSERT INTO categorias (id_categoria, nombre_categoria) VALUES
-                (1, 'Cuadernos y Libretas'), (2, 'Escritura y Corrección'), (3, 'Papel e Impresión'),
-                (4, 'Dibujo y Arte'), (5, 'Archiveros y Carpetas'), (6, 'Pegamentos y Cintas'),
-                (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
-            """)
+        cursor.execute("""
+            INSERT INTO categorias (id_categoria, nombre_categoria) VALUES
+            (1, 'Cuadernos y Libretas'), (2, 'Escritura y Corrección'), (3, 'Papel e Impresión'),
+            (4, 'Dibujo y Arte'), (5, 'Archiveros y Carpetas'), (6, 'Pegamentos y Cintas'),
+            (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
+        """)
 
         # Insertar Empleados
-        cursor.execute("SELECT COUNT(*) FROM empleados;")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
-                (1, 'Luis Ramirez Torres', 'Propietario', 'luis_owner', 'admin123'),
-                (2, 'Andres Hernandez', 'Analista', 'andres_ana', 'analista2026'),
-                (3, 'Juan Perez', 'Mostrador', 'juanp', 'mostrador1'),
-                (4, 'Maria Gomez', 'Mostrador', 'mariag', 'mostrador2');
-            """)
+        cursor.execute("""
+            INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
+            (1, 'Luis Ramirez Torres', 'Propietario', 'luis_owner', 'admin123'),
+            (2, 'Andres Hernandez', 'Analista', 'andres_ana', 'analista2026'),
+            (3, 'Juan Perez', 'Mostrador', 'juanp', 'mostrador1'),
+            (4, 'Maria Gomez', 'Mostrador', 'mariag', 'mostrador2');
+        """)
 
         # Insertar Proveedores
-        cursor.execute("SELECT COUNT(*) FROM proveedores;")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                INSERT INTO proveedores (id_proveedor, nombre_empresa, contacto_nombre, telefono) VALUES
-                (1, 'Distribuidora Escolar S.A.', 'Roberto Gomez', '555-1234'),
-                (2, 'Papeles del Centro', 'Alicia Meza', '555-5678'),
-                (3, 'Scribe Mexico', 'Fernando Ruiz', '555-9012');
-            """)
+        cursor.execute("""
+            INSERT INTO proveedores (id_proveedor, nombre_empresa, contacto_nombre, telefono) VALUES
+            (1, 'Distribuidora Escolar S.A.', 'Roberto Gomez', '555-1234'),
+            (2, 'Papeles del Centro', 'Alicia Meza', '555-5678'),
+            (3, 'Scribe Mexico', 'Fernando Ruiz', '555-9012');
+        """)
 
-        # Insertar Catálogo Masivo de 30 Productos con URL de Imágenes Limpias de Unsplash
-        cursor.execute("SELECT COUNT(*) FROM productos;")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                INSERT INTO productos (id_producto, codigo_barras, nombre_producto, marca, unidad_medida, stock_actual, stock_minimo, precio_venta_actual, estado, id_categoria, imagen_url) VALUES
-                -- Cat 1: Cuadernos
-                (101, '75010011', 'Cuaderno Profesional Raya 100hj', 'Scribe', 'Pieza', 45, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400'),
-                (102, '75010022', 'Cuaderno Profesional Cuadro C 100hj', 'Scribe', 'Pieza', 35, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
-                (103, '75010033', 'Libreta Italiana Raya 100hj', 'Estrella', 'Pieza', 20, 5, 18.50, 1, 1, 'https://images.unsplash.com/photo-1516414447565-b14be0adf13e?w=400'),
-                -- Cat 2: Escritura
-                (104, '75010044', 'Pluma Punto Mediano Negro', 'Bic', 'Pieza', 150, 20, 7.50, 1, 2, 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=400'),
-                (105, '75010055', 'Caja de Plumas Azul c/12', 'Bic', 'Paquete', 25, 5, 80.00, 1, 2, 'https://images.unsplash.com/photo-1569003339405-ea396a5a8a90?w=400'),
-                (106, '75010066', 'Lápiz Infinito Grafito HB', 'Dixon', 'Pieza', 80, 15, 6.00, 1, 2, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
-                (107, '75010077', 'Platón Marcador de Textos Amarillo', 'Sharpie', 'Pieza', 40, 10, 15.50, 1, 2, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=400'),
-                (108, '75010088', 'Corrector en Cinta Líquida', 'Pentel', 'Pieza', 30, 5, 22.00, 1, 2, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400'),
-                -- Cat 3: Papel
-                (109, '75010099', 'Paquete Hojas Bond Carta c/500', 'Navator', 'Paquete', 30, 8, 95.00, 1, 3, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
-                (110, '75010101', 'Block de Notas Adhesivas Post-it', '3M', 'Pieza', 50, 10, 28.00, 1, 3, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
-                -- Cat 4: Dibujo y Arte
-                (111, '75010112', 'Caja de Colores de Madera c/24', 'Prismacolor', 'Pieza', 15, 5, 140.00, 1, 4, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400'),
-                (112, '75010123', 'Acuarelas Escolares 12 Pastillas', 'Pelikan', 'Pieza', 18, 4, 45.00, 1, 4, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400'),
-                (113, '75010134', 'Plumones Lavables c/12', 'Crayola', 'Paquete', 22, 6, 75.00, 1, 4, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=400'),
-                -- Cat 5: Archiveros
-                (114, '75010145', 'Carpeta de Tres Argollas 1 pulg', 'Lefort', 'Pieza', 12, 4, 45.00, 1, 5, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
-                (115, '75010156', 'Folder Tamaño Carta Azul c/10', 'Generico', 'Paquete', 40, 10, 20.00, 1, 5, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
-                -- Cat 6: Pegamentos
-                (116, '75010167', 'Lápiz Adhesivo 21g', 'Pritt', 'Pieza', 60, 15, 18.50, 1, 6, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
-                (117, '75010178', 'Pegamento Blanco Líquido 120g', 'Elmers', 'Pieza', 25, 5, 24.00, 1, 6, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400'),
-                (118, '75010189', 'Cinta Adhesiva Transparente', 'Tuck', 'Pieza', 45, 8, 12.00, 1, 6, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400'),
-                -- Cat 7: Geometría
-                (119, '75010190', 'Juego de Geometría Plástico', 'Baco', 'Pieza', 20, 5, 38.00, 1, 7, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
-                (120, '75010201', 'Regla de Aluminio 30 cm', 'Maped', 'Pieza', 15, 5, 29.50, 1, 7, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
-                -- Cat 8: Servicios Digitales
-                (121, 'SRV001', 'Copia Fotostática Tamaño Carta', 'Generico', 'Pieza', 9999, 0, 1.50, 1, 8, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
-                (122, 'SRV002', 'Impresión Color Láser', 'HP', 'Pieza', 9999, 0, 5.00, 1, 8, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
-                -- Cat 9: Oficina General
-                (123, '75010223', 'Calculadora Científica 240 fun', 'Casio', 'Pieza', 10, 2, 299.00, 1, 9, 'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=400'),
-                (124, '75010234', 'Tijeras Escolares Acero Inox', 'Barrilito', 'Pieza', 30, 5, 16.00, 1, 9, 'https://images.unsplash.com/photo-1503792501406-2c40da09e1e2?w=400'),
-                (125, '75010245', 'Goma de Borrar Migajón M20', 'Factis', 'Pieza', 100, 20, 5.50, 1, 9, 'https://images.unsplash.com/photo-1516414447565-b14be0adf13e?w=400'),
-                (126, '75010256', 'Sacapuntas de Metal Doble', 'Maped', 'Pieza', 55, 10, 12.00, 1, 9, 'https://images.unsplash.com/photo-1503792501406-2c40da09e1e2?w=400'),
-                (127, '75010267', 'Engrapadora de Media Tira', 'Pilot', 'Pieza', 8, 2, 85.00, 1, 9, 'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=400'),
-                (128, '75010278', 'Caja de Clips Estándar c/100', 'Acme', 'Paquete', 40, 10, 14.00, 1, 9, 'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=400'),
-                -- Cat 10: Regalos y Envolturas
-                (129, '75010289', 'Pliego Papel Regalo Diseños', 'Generico', 'Pieza', 100, 15, 10.00, 1, 10, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400'),
-                (130, '75010290', 'Moño Celofán Mediano c/10', 'Generico', 'Paquete', 25, 5, 35.00, 1, 10, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400');
-            """)
+        # Insertar Catálogo con IMÁGENES REALES Y CORREGIDAS (¡Cero Computadoras!)
+        cursor.execute("""
+            INSERT INTO productos (id_producto, codigo_barras, nombre_producto, marca, unidad_medida, stock_actual, stock_minimo, precio_venta_actual, estado, id_categoria, imagen_url) VALUES
+            (101, '75010011', 'Cuaderno Profesional Raya 100hj', 'Scribe', 'Pieza', 45, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
+            (102, '75010022', 'Cuaderno Profesional Cuadro C 100hj', 'Scribe', 'Pieza', 35, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400'),
+            (103, '75010033', 'Libreta Italiana Raya 100hj', 'Estrella', 'Pieza', 20, 5, 18.50, 1, 1, 'https://images.unsplash.com/photo-1516414447565-b14be0adf13e?w=400'),
+            (104, '75010044', 'Pluma Punto Mediano Negro', 'Bic', 'Pieza', 150, 20, 7.50, 1, 2, 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=400'),
+            (105, '75010055', 'Caja de Plumas Azul c/12', 'Bic', 'Paquete', 25, 5, 80.00, 1, 2, 'https://images.unsplash.com/photo-1569003339405-ea396a5a8a90?w=400'),
+            (106, '75010066', 'Lápiz Infinito Grafito HB', 'Dixon', 'Pieza', 80, 15, 6.00, 1, 2, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
+            (107, '75010077', 'Platón Marcador de Textos Amarillo', 'Sharpie', 'Pieza', 40, 10, 15.50, 1, 2, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=400'),
+            (108, '75010088', 'Corrector en Cinta Líquida', 'Pentel', 'Pieza', 30, 5, 22.00, 1, 2, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400'),
+            (109, '75010099', 'Paquete Hojas Bond Carta c/500', 'Navator', 'Paquete', 30, 8, 95.00, 1, 3, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
+            (110, '75010101', 'Block de Notas Adhesivas Post-it', '3M', 'Pieza', 50, 10, 28.00, 1, 3, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
+            (111, '75010112', 'Caja de Colores de Madera c/24', 'Prismacolor', 'Pieza', 15, 5, 140.00, 1, 4, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400'),
+            (112, '75010123', 'Acuarelas Escolares 12 Pastillas', 'Pelikan', 'Pieza', 18, 4, 45.00, 1, 4, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400'),
+            (113, '75010134', 'Plumones Lavables c/12', 'Crayola', 'Paquete', 22, 6, 75.00, 1, 4, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=400'),
+            (114, '75010145', 'Carpeta de Tres Argollas 1 pulg', 'Lefort', 'Pieza', 12, 4, 45.00, 1, 5, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
+            (115, '75010156', 'Folder Tamaño Carta Azul c/10', 'Generico', 'Paquete', 40, 10, 20.00, 1, 5, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
+            (116, '75010167', 'Lápiz Adhesivo 21g', 'Pritt', 'Pieza', 60, 15, 18.50, 1, 6, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
+            (117, '75010178', 'Pegamento Blanco Líquido 120g', 'Elmers', 'Pieza', 25, 5, 24.00, 1, 6, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400'),
+            (118, '75010189', 'Cinta Adhesiva Transparente', 'Tuck', 'Pieza', 45, 8, 12.00, 1, 6, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400'),
+            (119, '75010190', 'Juego de Geometría Plástico', 'Baco', 'Pieza', 20, 5, 38.00, 1, 7, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
+            (120, '75010201', 'Regla de Aluminio 30 cm', 'Maped', 'Pieza', 15, 5, 29.50, 1, 7, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
+            (121, 'SRV001', 'Copia Fotostática Tamaño Carta', 'Generico', 'Pieza', 9999, 0, 1.50, 1, 8, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
+            (122, 'SRV002', 'Impresión Color Láser', 'HP', 'Pieza', 9999, 0, 5.00, 1, 8, 'https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?w=400'),
+            (123, '75010223', 'Calculadora Científica 240 fun', 'Casio', 'Pieza', 10, 2, 299.00, 1, 9, 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400'),
+            (124, '75010234', 'Tijeras Escolares Acero Inox', 'Barrilito', 'Pieza', 30, 5, 16.00, 1, 9, 'https://images.unsplash.com/photo-1503792501406-2c40da09e1e2?w=400'),
+            (125, '75010245', 'Goma de Borrar Migajón M20', 'Factis', 'Pieza', 100, 20, 5.50, 1, 9, 'https://images.unsplash.com/photo-1516414447565-b14be0adf13e?w=400'),
+            (126, '75010256', 'Sacapuntas de Metal Doble', 'Maped', 'Pieza', 55, 10, 12.00, 1, 9, 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400'),
+            (127, '75010267', 'Engrapadora de Media Tira', 'Pilot', 'Pieza', 8, 2, 85.00, 1, 9, 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400'),
+            (128, '75010278', 'Caja de Clips Estándar c/100', 'Acme', 'Paquete', 40, 10, 14.00, 1, 9, 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400'),
+            (129, '75010289', 'Pliego Papel Regalo Diseños', 'Generico', 'Pieza', 100, 15, 10.00, 1, 10, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400'),
+            (130, '75010290', 'Moño Celofán Mediano c/10', 'Generico', 'Paquete', 25, 5, 35.00, 1, 10, 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400');
+        """)
             
         conexion.commit()
         cursor.close()
