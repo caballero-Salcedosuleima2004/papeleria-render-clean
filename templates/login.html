@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - El Estudiante Feliz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+    <div class="card p-4 shadow" style="width: 400px;">
+        <h3 class="text-center text-primary mb-4">📚 El Estudiante Feliz</h3>
+        <h5 class="text-center mb-3">Control de Acceso</h5>
+        
+        {% if error %}
+            <div class="alert alert-danger p-2 text-center" style="font-size: 14px;">{{ error }}</div>
+        {% endif %}
+
+        <form action="/" method="POST">
+            <div class="mb-3">
+                <label class="form-label">¿Quién eres?</label>
+                <select class="form-select" name="tipo_usuario" id="tipo_usuario" onchange="cambiarVista()">
+                    <option value="cliente">🛒 Cliente (Comprador)</option>
+                    <option value="empleado">🔑 Empleado (Vendedor)</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" id="label_usuario">Usuario de Cliente</label>
+                <input type="text" class="form-control" name="usuario" id="input_usuario" placeholder="Tu usuario registrado" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" name="contrasena" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-2">Ingresar al Sistema</button>
+        </form>
+
+        <div class="text-center mt-3" id="link_registro">
+            <span class="text-muted" style="font-size: 14px;">¿Eres un cliente nuevo?</span><br>
+            <a href="/registro" class="text-decoration-none">Crear una cuenta aquí</a>
+        </div>
+    </div>
+
+    <script>
+        function cambiarVista() {
+            var tipo = document.getElementById("tipo_usuario").value;
+            var labelUser = document.getElementById("label_usuario");
+            var inputUser = document.getElementById("input_usuario");
+            var linkRegistro = document.getElementById("link_registro");
+            
+            if (tipo === "empleado") {
+                labelUser.innerText = "Usuario de Empleado";
+                inputUser.placeholder = "Ej. luis_owner";
+                linkRegistro.style.display = "none";
+            } else {
+                labelUser.innerText = "Usuario de Cliente";
+                inputUser.placeholder = "Tu usuario registrado";
+                linkRegistro.style.display = "block";
+            }
+        }
+        window.onload = cambiarVista;
+    </script>
+</body>
+</html>

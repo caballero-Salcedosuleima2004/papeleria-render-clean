@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tienda - El Estudiante Feliz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-primary shadow mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">📚 El Estudiante Feliz</span>
+            <div class="d-flex align-items-center text-white">
+                <span class="me-3">👤 ¡Bienvenido, <strong>{{ nombre_usuario }}</strong>!</span>
+                <a href="/logout" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            
+            <div class="col-md-8">
+                <h3 class="mb-4">🛒 Productos Disponibles</h3>
+                <div class="row">
+                    {% for p in productos %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-primary">{{ p.nombre_producto }}</h5>
+                                <p class="text-muted small mb-1">Marca: {{ p.marca }}</p>
+                                <h4 class="text-success font-weight-bold">${{ p.precio_venta_actual }}</h4>
+                                <p class="text-secondary small">Disponibles: {{ p.stock_actual }} pzas</p>
+                                
+                                {% if p.stock_actual > 0 %}
+                                <form action="/agregar_carrito" method="POST">
+                                    <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
+                                    <input type="hidden" name="nombre_producto" value="{{ p.nombre_producto }}">
+                                    <input type="hidden" name="precio" value="{{ p.precio_venta_actual }}">
+                                    <button type="submit" class="btn btn-primary w-100">🛍️ Agregar al Carrito</button>
+                                </form>
+                                {% else %}
+                                <button class="btn btn-secondary w-100" disabled>❌ Agotado</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow mb-4 position-sticky" style="top: 20px;">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">📋 Mi Carrito ({{ cantidad_items }})</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if carrito %}
+                            <ul class="list-group mb-3">
+                                {% for item in carrito %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center small">
+                                    <div>
+                                        <strong>{{ item.nombre }}</strong><br>
+                                        <span class="text-muted">${{ item.precio }} c/u</span>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">x{{ item.cantidad }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>💰 Total a Pagar:</h5>
+                                <h3 class="text-success font-weight-bold">${{ total_carrito }}</h3>
+                            </div>
+                            <form action="/pagar_carrito" method="POST" class="mb-2">
+                                <button type="submit" class="btn btn-success w-100 btn-lg">💸 Confirmar y Pagar</button>
+                            </form>
+                            <a href="/vaciar_carrito" class="btn btn-outline-danger btn-sm w-100">Limpiar Carrito</a>
+                        {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <p class="mb-0">El carrito está vacío.</p>
+                                <small>Agrega productos desde el catálogo.</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card shadow-sm mt-4 p-4 bg-white mb-5">
+            <h4 class="text-secondary mb-3">📊 Últimas Ventas Generadas Globales</h4>
+            <table class="table table-striped table-hover small">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Folio Venta</th>
+                        <th>Fecha / Hora</th>
+                        <th>Comprador / Cliente</th>
+                        <th>Producto Comprado</th>
+                        <th>Total Pagado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in historial %}
+                    <tr>
+                        <td>#{{ h.id_venta }}</td>
+                        <td>{{ h.fecha_hora }}</td>
+                        <td class="text-primary fw-bold">{{ h.nombre_cliente if h.nombre_cliente else 'Mostrador (General)' }}</td>
+                        <td>{{ h.nombre_producto }}</td>
+                        <td class="text-success font-weight-bold">${{ h.total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>
