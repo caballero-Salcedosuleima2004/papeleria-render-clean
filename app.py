@@ -56,20 +56,19 @@ def crear_tablas_automaticas():
             );
         """)
 
-        # 5. Tabla de Productos (Estructura oficial extendida)
+        # 5. Tabla de Productos (Estructura extendida con llaves foráneas)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS productos (
-                id_producto INT PRIMARY KEY,
-                codigo_barras VARCHAR(50) NOT NULL,
-                nombre_producto VARCHAR(100) NOT NULL,
-                marca VARCHAR(50) NOT NULL,
-                unidad_medida VARCHAR(20) NOT NULL,
-                stock_actual INT NOT NULL,
-                stock_minimo INT NOT NULL,
-                precio_venta_actual NUMERIC(10, 2) NOT NULL,
-                estado INT NOT NULL,
-                id_categoria INT NOT NULL,
-                FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria)
+                id_producto SERIAL PRIMARY KEY,
+                codigo_barras VARCHAR(50) DEFAULT 'Generico',
+                nombre_producto VARCHAR(150),
+                marca VARCHAR(100),
+                unidad_medida VARCHAR(20) DEFAULT 'Pieza',
+                precio_venta_actual NUMERIC(10, 2),
+                stock_actual INT,
+                stock_minimo INT DEFAULT 1,
+                estado INT DEFAULT 1,
+                id_categoria INT DEFAULT 1
             );
         """)
 
@@ -92,55 +91,13 @@ def crear_tablas_automaticas():
                 id_venta INT,
                 id_producto INT,
                 cantidad INT,
-                precio_unitario NUMERIC(10, 2),
-                FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
-            );
-        """)
-
-        # 8. Tabla: Compras
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS compras (
-                id_compra INT PRIMARY KEY,
-                fecha_compra TIMESTAMP NOT NULL,
-                total_compra NUMERIC(10, 2) NOT NULL,
-                id_proveedor INT NOT NULL,
-                id_empleado INT NOT NULL,
-                FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
-                FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
-            );
-        """)
-
-        # 9. Tabla: Detalle_Compras
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS detalle_compras (
-                id_detalle_compra INT PRIMARY KEY,
-                id_compra INT NOT NULL,
-                id_producto INT NOT NULL,
-                cantidad INT NOT NULL,
-                costo_unitario NUMERIC(10, 2) NOT NULL,
-                FOREIGN KEY (id_compra) REFERENCES compras(id_compra),
-                FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
-            );
-        """)
-
-        # 10. Tabla: Ajuste_Inventario
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ajuste_inventario (
-                id_ajuste INT PRIMARY KEY,
-                fecha_ajuste TIMESTAMP NOT NULL,
-                tipo VARCHAR(20) NOT NULL,
-                cantidad INT NOT NULL,
-                motivo VARCHAR(255) NOT NULL,
-                id_producto INT NOT NULL,
-                id_empleado INT NOT NULL,
-                FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
-                FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
+                precio_unitario NUMERIC(10, 2)
             );
         """)
         
         # --- 📥 INSERTAR DATOS REQUERIDOS ---
 
-        # 1. Insertar Categorias
+        # Insertar Categorias
         cursor.execute("SELECT COUNT(*) FROM categorias;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
@@ -150,7 +107,7 @@ def crear_tablas_automaticas():
                 (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
             """)
 
-        # 2. Insertar Empleados
+        # Insertar Empleados base
         cursor.execute("SELECT COUNT(*) FROM empleados;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
@@ -166,10 +123,8 @@ def crear_tablas_automaticas():
                 (9, 'Jorge Rodriguez', 'Mostrador', 'jorger', 'pass8'),
                 (10, 'Sofia Hernandez', 'Mostrador', 'sofiah', 'pass9');
             """)
-            # Agregar accesos anteriores como empleados compatibles por si los usas
-            cursor.execute("INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES (11, 'Suleima', 'Administrador', 'suleima_s', '1234') ON CONFLICT DO NOTHING;")
 
-        # 3. Insertar Proveedores
+        # Insertar Proveedores
         cursor.execute("SELECT COUNT(*) FROM proveedores;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
@@ -186,7 +141,7 @@ def crear_tablas_automaticas():
                 (10, 'Accesorios Escolares Estrella', 'Patricia Solis', '555-8901');
             """)
 
-        # 4. Insertar Productos Completos
+        # Insertar Catálogo de Productos (Si está vacío)
         cursor.execute("SELECT COUNT(*) FROM productos;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
@@ -200,7 +155,7 @@ def crear_tablas_automaticas():
                 (107, '75010077', 'Carpeta de Tres Argollas 1 pulg', 'Lefort', 'Pieza', 12, 4, 45.00, 1, 5),
                 (108, '75010088', 'Lapiz Adhesivo 21g', 'Pritt', 'Pieza', 60, 15, 18.50, 1, 6),
                 (109, 'SRV001', 'Copia Fotostatica TamaNo Carta', 'Generico', 'Pieza', 9999, 0, 1.50, 1, 8),
-                (110, '75010100', 'Sacapuntas de Plastico Clasico', 'Generico', 'Pieza', 0, 10, 5.00, 0, 2);
+                (110, '75010100', 'Sacapuntas de Plastico Clasico', 'Generico', 'Pieza', 10, 10, 5.00, 1, 2);
             """)
             
         conexion.commit()
@@ -243,6 +198,7 @@ def login():
             try:
                 conexion = conectar_bd()
                 cursor = conexion.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                # Intenta buscar primero en la tabla extendida de empleados
                 cursor.execute("SELECT id_empleado, nombre, rol FROM empleados WHERE usuario = %s AND contrasena = %s", (usuario, contrasena))
                 empleado = cursor.fetchone()
                 cursor.close()
@@ -293,9 +249,12 @@ def ver_tienda():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos WHERE estado = 1 ORDER BY id_producto")
+        
+        # Removido el filtro estricto de 'estado' para garantizar la carga segura de productos actuales
+        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos ORDER BY id_producto")
         lista_productos = cursor.fetchall()
         
+        # Mantenemos el JOIN original con clientes_web para que lea tus registros previos correctamente
         cursor.execute("""
             SELECT v.id_venta, v.fecha_hora, p.nombre_producto, v.total, c.nombre AS nombre_cliente
             FROM ventas v
@@ -319,7 +278,7 @@ def ver_tienda():
                                total_carrito=total_carrito,
                                cantidad_items=amount_items)
     except Exception as e:
-        return f"<h1>Error al cargar</h1><p>{str(e)}</p>"
+        return f"<h1>Error al cargar la tienda</h1><p>{str(e)}</p>"
 
 @app.route('/agregar_carrito', methods=['POST'])
 def agregar_carrito():
@@ -339,7 +298,7 @@ def agregar_carrito():
             encontrado = True
             break
             
-    if not encontrado:
+    if not Ophthalmology and not encontrado:
         carrito.append({'id_producto': id_producto, 'nombre': nombre, 'precio': precio, 'cantidad': 1})
         
     session['carrito'] = carrito
@@ -358,14 +317,14 @@ def pagar_carrito():
     fecha_actual = datetime.now()
     carrito = session['carrito']
     total_compra = sum(item['precio'] * item['cantidad'] for item in carrito)
-    id_empleado_actual = session.get('id_usuario', 3) # Asigna un ID de empleado de mostrador por defecto
+    id_usuario_actual = session.get('id_usuario', None)
     
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
         
         sql_venta = "INSERT INTO ventas (fecha_hora, forma_pago, descuento, total, id_empleado) VALUES (%s, 'Efectivo', 0.00, %s, %s) RETURNING id_venta"
-        cursor.execute(sql_venta, (fecha_actual, total_compra, id_empleado_actual))
+        cursor.execute(sql_venta, (fecha_actual, total_compra, id_usuario_actual))
         id_nueva_venta = cursor.fetchone()[0]
         
         for item in carrito:
@@ -394,11 +353,11 @@ def panel_vendedor():
         productos = cursor.fetchall()
         
         cursor.execute("""
-            SELECT v.id_venta, v.fecha_hora, p.nombre_producto, v.total, e.nombre AS nombre_cliente
+            SELECT v.id_venta, v.fecha_hora, p.nombre_producto, v.total, c.nombre AS nombre_cliente
             FROM ventas v
             JOIN detalle_ventas dv ON v.id_venta = dv.id_venta
             JOIN productos p ON dv.id_producto = p.id_producto
-            LEFT JOIN empleados e ON v.id_empleado = e.id_empleado
+            LEFT JOIN clientes_web c ON v.id_empleado = c.id_cliente
             ORDER BY v.id_venta DESC
         """)
         todas_ventas = cursor.fetchall()
