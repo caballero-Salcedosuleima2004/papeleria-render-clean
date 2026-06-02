@@ -16,9 +16,18 @@ def crear_tablas_automaticas():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
-        # 🚀 TRUCO TEMPORAL PARA FORZAR LA ACTUALIZACIÓN GRATIS
-        cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(255) DEFAULT 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400';")
-        cursor.execute("TRUNCATE TABLE productos CASCADE;")
+        
+        # 🔥 EL ELIMINADOR MÁGICO: Esto borrará la tabla incompleta para que se cree la nueva con imágenes
+        cursor.execute("DROP TABLE IF EXISTS detalle_ventas CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS productos CASCADE;")
+        
+        # 1. Tabla: Categorias
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS categorias (
+                id_categoria INT PRIMARY KEY,
+                nombre_categoria VARCHAR(50) NOT NULL
+            );
+        """)
         
         # 1. Tabla: Categorias
         cursor.execute("""
