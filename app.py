@@ -6,6 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_suleima'
+NOMBRE_PAPELERIA = 'Papelería Estudiante Feliz'
 
 def conectar_bd():
     url_bd = os.environ.get('DATABASE_URL')
