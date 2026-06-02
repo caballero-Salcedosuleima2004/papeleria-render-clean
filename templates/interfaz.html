@@ -2,118 +2,451 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Tienda - El Estudiante Feliz</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papelería Suleima - Tienda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6C5CE7;
+            --secondary-color: #00CEC9;
+            --dark-color: #2D3436;
+            --light-bg: #F9F9FB;
+            --card-bg: #FFFFFF;
+            --text-muted: #636E72;
+            --danger-color: #D63031;
+        }
 
-    <nav class="navbar navbar-dark bg-primary shadow mb-4">
-        <div class="container">
-            <span class="navbar-brand mb-0 h1">📚 El Estudiante Feliz</span>
-            <div class="d-flex align-items-center text-white">
-                <span class="me-3">👤 ¡Bienvenido, <strong>{{ nombre_usuario }}</strong>!</span>
-                <a href="/logout" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
-            </div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-color);
+        }
+
+        /* 🌟 BARRA DE NAVEGACIÓN */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #4834D4);
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info span {
+            font-weight: 300;
+        }
+
+        .user-info strong {
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .btn-logout {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 6px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background-color: white;
+            color: var(--primary-color);
+        }
+
+        /* 📦 CONTENEDOR PRINCIPAL */
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 4%;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 🛍️ SECCIÓN DE PRODUCTOS */
+        .productos-section h2 {
+            margin-bottom: 25px;
+            font-size: 22px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .productos-section h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 5px;
+            height: 22px;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 25px;
+        }
+
+        .producto-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .producto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.12);
+        }
+
+        /* 📸 CONTENEDOR E IMÁGENES */
+        .img-container {
+            width: 100%;
+            height: 180px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #F1F2F6;
+            margin-bottom: 15px;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .producto-card:hover .img-container img {
+            transform: scale(1.08);
+        }
+
+        .producto-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+            height: 44px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .producto-info .marca {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .producto-footer {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .precio {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stock {
+            font-size: 11px;
+            background-color: #E3ECEF;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .stock.low {
+            background-color: #FFEAA7;
+            color: #D63031;
+        }
+
+        .btn-add {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover {
+            background-color: #564FB1;
+        }
+
+        /* 🛒 BARRA LATERAL DEL CARRITO Y HISTORIAL */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .panel-box {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .panel-box h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-count {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        /* DETALLES DEL CARRITO */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #EEDFFA;
+            font-size: 13px;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cart-total {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #F1F2F6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .cart-actions {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-checkout {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            font-weight: 700;
+            text-align: center;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .btn-checkout:hover {
+            opacity: 0.9;
+        }
+
+        .btn-clear {
+            color: var(--danger-color);
+            text-decoration: none;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* 📜 PANEL HISTORIAL */
+        .history-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #F1F2F6;
+            font-size: 12px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .history-prod {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>✏️ Papelería Suleima</h1>
+        <div class="user-info">
+            <span>Bienvenido/a, <strong>{{ nombre_usuario }}</strong></span>
+            <a href="/logout" class="btn-logout">Cerrar Sesión</a>
         </div>
-    </nav>
+    </header>
 
     <div class="container">
-        <div class="row">
-            
-            <div class="col-md-8">
-                <h3 class="mb-4">🛒 Productos Disponibles</h3>
-                <div class="row">
-                    {% for p in productos %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-primary">{{ p.nombre_producto }}</h5>
-                                <p class="text-muted small mb-1">Marca: {{ p.marca }}</p>
-                                <h4 class="text-success font-weight-bold">${{ p.precio_venta_actual }}</h4>
-                                <p class="text-secondary small">Disponibles: {{ p.stock_actual }} pzas</p>
-                                
-                                {% if p.stock_actual > 0 %}
-                                <form action="/agregar_carrito" method="POST">
-                                    <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
-                                    <input type="hidden" name="nombre_producto" value="{{ p.nombre_producto }}">
-                                    <input type="hidden" name="precio" value="{{ p.precio_venta_actual }}">
-                                    <button type="submit" class="btn btn-primary w-100">🛍️ Agregar al Carrito</button>
-                                </form>
-                                {% else %}
-                                <button class="btn btn-secondary w-100" disabled>❌ Agotado</button>
-                                {% endif %}
-                            </div>
+        
+        <main class="productos-section">
+            <h2>Nuestro Catálogo Oficial</h2>
+            <div class="productos-grid">
+                {% for producto in productos %}
+                <div class="producto-card">
+                    <div>
+                        <div class="img-container">
+                            <img src="{{ producto['imagen_url'] }}" alt="{{ producto['nombre_producto'] }}">
+                        </div>
+                        
+                        <div class="producto-info">
+                            <div class="marca">{{ producto['marca'] }}</div>
+                            <h3>{{ producto['nombre_producto'] }}</h3>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <div class="col-md-4">
-                <div class="card shadow mb-4 position-sticky" style="top: 20px;">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">📋 Mi Carrito ({{ cantidad_items }})</h4>
-                    </div>
-                    <div class="card-body">
-                        {% if carrito %}
-                            <ul class="list-group mb-3">
-                                {% for item in carrito %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center small">
-                                    <div>
-                                        <strong>{{ item.nombre }}</strong><br>
-                                        <span class="text-muted">${{ item.precio }} c/u</span>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill">x{{ item.cantidad }}</span>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                            <hr>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5>💰 Total a Pagar:</h5>
-                                <h3 class="text-success font-weight-bold">${{ total_carrito }}</h3>
-                            </div>
-                            <form action="/pagar_carrito" method="POST" class="mb-2">
-                                <button type="submit" class="btn btn-success w-100 btn-lg">💸 Confirmar y Pagar</button>
-                            </form>
-                            <a href="/vaciar_carrito" class="btn btn-outline-danger btn-sm w-100">Limpiar Carrito</a>
-                        {% else %}
-                            <div class="text-center py-4 text-muted">
-                                <p class="mb-0">El carrito está vacío.</p>
-                                <small>Agrega productos desde el catálogo.</small>
-                            </div>
-                        {% endif %}
+                    <div>
+                        <div class="producto-footer">
+                            <span class="precio">${{ producto['precio_venta_actual'] }}</span>
+                            <span class="stock {% if producto['stock_actual'] <= 10 %}low{% endif %}">
+                                Mod: {{ producto['stock_actual'] }} disp.
+                            </span>
+                        </div>
+
+                        <form action="/agregar_carrito" method="POST">
+                            <input type="hidden" name="id_producto" value="{{ producto['id_producto'] }}">
+                            <input type="hidden" name="nombre_producto" value="{{ producto['nombre_producto'] }}">
+                            <input type="hidden" name="precio" value="{{ producto['precio_venta_actual'] }}">
+                            <button type="submit" class="btn-add">
+                                🛒 Agregar
+                            </button>
+                        </form>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            
+            <div class="panel-box">
+                <h2>Mi Carrito <span class="badge-count">{{ cantidad_items }}</span></h2>
+                
+                {% if carrito %}
+                    {% for item in carrito %}
+                    <div class="cart-item">
+                        <div>
+                            <div class="cart-item-name">{{ item['nombre'] }}</div>
+                            <small style="color: var(--text-muted);">{{ item['cantidad'] }}x - ${{ item['precio'] }}</small>
+                        </div>
+                        <span style="font-weight: 600;">${{ item['precio'] * item['cantidad'] }}</span>
+                    </div>
+                    {% endfor %}
+
+                    <div class="cart-total">
+                        <span>Total:</span>
+                        <span>${{ total_carrito }}</span>
+                    </div>
+
+                    <div class="cart-actions">
+                        <form action="/pagar_carrito" method="POST">
+                            <button type="submit" class="btn-checkout" style="width: 100%;">💳 Proceder al Pago</button>
+                        </form>
+                        <a href="/vaciar_carrito" class="btn-clear">Vaciar Carrito</a>
+                    </div>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0;">
+                        El carrito está vacío. ¡Elige tus útiles!
+                    </p>
+                {% endif %}
             </div>
 
-        </div>
-
-        <div class="card shadow-sm mt-4 p-4 bg-white mb-5">
-            <h4 class="text-secondary mb-3">📊 Últimas Ventas Generadas Globales</h4>
-            <table class="table table-striped table-hover small">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Folio Venta</th>
-                        <th>Fecha / Hora</th>
-                        <th>Comprador / Cliente</th>
-                        <th>Producto Comprado</th>
-                        <th>Total Pagado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for h in historial %}
-                    <tr>
-                        <td>#{{ h.id_venta }}</td>
-                        <td>{{ h.fecha_hora }}</td>
-                        <td class="text-primary fw-bold">{{ h.nombre_cliente if h.nombre_cliente else 'Mostrador (General)' }}</td>
-                        <td>{{ h.nombre_producto }}</td>
-                        <td class="text-success font-weight-bold">${{ h.total }}</td>
-                    </tr>
+            <div class="panel-box">
+                <h2>Últimas Ventas</h2>
+                {% if historial %}
+                    {% for registro in historial %}
+                    <div class="history-item">
+                        <div class="history-meta">
+                            <span>Ticket #{{ registro['id_venta'] }}</span>
+                            <span>${{ registro['total'] }}</span>
+                        </div>
+                        <div class="history-prod">🛒 {{ registro['nombre_producto'] }}</div>
+                        <small style="color: var(--text-muted); font-size: 10px;">Comprador: {{ registro['nombre_cliente'] or 'Público General' }}</small>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 10px 0;">No hay compras registradas hoy.</p>
+                {% endif %}
+            </div>
+
+        </aside>
 
     </div>
+
 </body>
 </html>
