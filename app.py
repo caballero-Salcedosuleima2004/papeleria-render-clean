@@ -18,15 +18,6 @@ def crear_tablas_automaticas():
         conexion = conectar_bd()
         cursor = conexion.cursor()
         
-        # 🔥 ELIMINADOR MASIVO: Borra absolutamente todo lo viejo para corregir los errores de columnas
-        cursor.execute("DROP TABLE IF EXISTS detalle_ventas CASCADE;")
-        cursor.execute("DROP TABLE IF EXISTS ventas CASCADE;")
-        cursor.execute("DROP TABLE IF EXISTS productos CASCADE;")
-        cursor.execute("DROP TABLE IF EXISTS empleados CASCADE;")
-        cursor.execute("DROP TABLE IF EXISTS clientes_web CASCADE;")
-        cursor.execute("DROP TABLE IF EXISTS proveedores CASCADE;")
-        cursor.execute("DROP TABLE IF EXISTS categorias CASCADE;")
-        
         # 1. Tabla: Categorias
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS categorias (
