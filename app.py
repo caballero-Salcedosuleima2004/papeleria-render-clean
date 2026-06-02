@@ -8,11 +8,10 @@ app = Flask(__name__)
 app.secret_key = 'clave_secreta_suleima'
 
 def conectar_bd():
-    # Render nos da la URL de la base de datos en esta variable
     url_bd = os.environ.get('DATABASE_URL')
     return psycopg2.connect(url_bd, sslmode='require')
 
-# === ✨ SUPER FUNCIÓN MÁGICA AUTOMÁTICA PARA TODAS LAS TABLAS ===
+# === ✨ FUNCIÓN AUTOMÁTICA PARA CREAR TODAS LAS TABLAS ===
 def crear_tablas_automaticas():
     try:
         conexion = conectar_bd()
@@ -73,7 +72,7 @@ def crear_tablas_automaticas():
             );
         """)
         
-        # Insertar empleados por defecto si la tabla está vacía
+        # Insertar empleados si la tabla está vacía
         cursor.execute("SELECT COUNT(*) FROM empleados;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
@@ -84,13 +83,13 @@ def crear_tablas_automaticas():
                 ('Zoran', 'zoran_g', '1234', 'Administrador');
             """)
 
-        # Insertar algunos productos de prueba para que la papelería no esté vacía
+        # Insertar productos si la tabla está vacía
         cursor.execute("SELECT COUNT(*) FROM productos;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
                 INSERT INTO productos (nombre_producto, marca, precio_venta_actual, stock_actual) VALUES
-                ('Cuaderno Raya A4', 'Scribe', 25.00, 50),
-                ('Lápiz HB', 'Dixon', 5.00, 100),
+                ('Cuaderno Raya A4', 'Scribe', 26.00, 50),
+                ('Lápiz HB', 'Dixon', 5.50, 100),
                 ('Goma de borrar', 'Factis', 8.50, 40),
                 ('Caja de Colores x24', 'Prismacolor', 120.00, 15);
             """)
@@ -98,11 +97,9 @@ def crear_tablas_automaticas():
         conexion.commit()
         cursor.close()
         conexion.close()
-        print("¡Todas las tablas estructurales creadas con éxito!")
     except Exception as e:
         print("Error al inicializar la base de datos:", e)
 
-# Ejecutamos la super función para asegurar que TODO exista en internet
 crear_tablas_automaticas()
 # ============================================================
 
@@ -186,7 +183,7 @@ def ver_tienda():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos")
+        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos ORDER BY id_producto")
         lista_productos = cursor.fetchall()
         
         cursor.execute("""
@@ -214,23 +211,26 @@ def ver_tienda():
     except Exception as e:
         return f"<h1>Error al cargar</h1><p>{str(e)}</p>"
 
+# === 🛒 AQUÍ ESTÁ LA CORRECCIÓN TOTAL DEL CARRITO ===
 @app.route('/agregar_carrito', methods=['POST'])
 def agregar_carrito():
     if 'carrito' not in session:
         session['carrito'] = []
+    
     id_producto = request.form['id_producto']
     nombre = request.form['nombre_producto']
     precio = float(request.form['precio'])
     
     carrito = session['carrito']
     encontrado = False
+    
     for item in carrito:
         if str(item['id_producto']) == str(id_producto):
             item['cantidad'] += 1
             encontrado = True
             break
             
-    if not waterfront:
+    if not encontrado:
         carrito.append({'id_producto': id_producto, 'nombre': nombre, 'precio': precio, 'cantidad': 1})
         
     session['carrito'] = carrito
@@ -246,18 +246,17 @@ def pagar_carrito():
     if 'usuario' not in session or not session.get('carrito'):
         return redirect(url_for('ver_tienda'))
         
-    fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    fecha_actual = datetime.now()
     carrito = session['carrito']
     total_compra = sum(item['precio'] * item['cantidad'] for item in carrito)
-    id_cliente_actual = session.get('id_usuario', 1)
+    id_cliente_actual = session.get('id_usuario', None)
     
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
         
-        sql_venta = "INSERT INTO ventas (fecha_hora, forma_pago, descuento, total, id_empleado) VALUES (%s, 'Efectivo', 0.00, %s, %s)"
+        sql_venta = "INSERT INTO ventas (fecha_hora, forma_pago, descuento, total, id_empleado) VALUES (%s, 'Efectivo', 0.00, %s, %s) RETURNING id_venta"
         cursor.execute(sql_venta, (fecha_actual, total_compra, id_cliente_actual))
-        cursor.execute("SELECT lastval()")
         id_nueva_venta = cursor.fetchone()[0]
         
         for item in carrito:
@@ -282,7 +281,7 @@ def panel_vendedor():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos")
+        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos ORDER BY id_producto")
         productos = cursor.fetchall()
         
         cursor.execute("""
