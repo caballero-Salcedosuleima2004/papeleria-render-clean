@@ -29,14 +29,6 @@ def crear_tablas_automaticas():
             );
         """)
         
-        # 1. Tabla: Categorias
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS categorias (
-                id_categoria INT PRIMARY KEY,
-                nombre_categoria VARCHAR(50) NOT NULL
-            );
-        """)
-
         # 2. Tabla de Clientes Web
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes_web (
