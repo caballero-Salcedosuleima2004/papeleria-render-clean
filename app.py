@@ -12,6 +12,45 @@ def conectar_bd():
     url_bd = os.environ.get('DATABASE_URL')
     return psycopg2.connect(url_bd, sslmode='require')
 
+# === ✨ FUNCIÓN AUTOMÁTICA PARA CREAR LA TABLA DE EMPLEADOS ===
+def crear_tablas_automaticas():
+    try:
+        conexion = conectar_bd()
+        cursor = conexion.cursor()
+        
+        # 1. Creamos la tabla de empleados si no existe
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS empleados (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(100),
+                usuario VARCHAR(50) UNIQUE,
+                contrasena VARCHAR(255),
+                rol VARCHAR(50)
+            );
+        """)
+        
+        # 2. Insertamos tus usuarios si la tabla está vacía
+        cursor.execute("SELECT COUNT(*) FROM empleados;")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("""
+                INSERT INTO empleados (nombre, usuario, contrasena, rol) VALUES
+                ('Andres', 'andres_profe', '1234', 'Propietario'),
+                ('Suleima', 'suleima_s', '1234', 'Administrador'),
+                ('Fatima', 'fatima_l', '1234', 'Administrador'),
+                ('Zoran', 'zoran_g', '1234', 'Administrador');
+            """)
+            
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+        print("¡Tablas y empleados creados con éxito en la nube!")
+    except Exception as e:
+        print("Error al inicializar la base de datos:", e)
+
+# Ejecutamos la función para asegurarnos de que todo exista al arrancar
+crear_tablas_automaticas()
+# ============================================================
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
