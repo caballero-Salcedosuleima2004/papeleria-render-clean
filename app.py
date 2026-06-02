@@ -12,13 +12,23 @@ def conectar_bd():
     url_bd = os.environ.get('DATABASE_URL')
     return psycopg2.connect(url_bd, sslmode='require')
 
-# === ✨ FUNCIÓN AUTOMÁTICA PARA CREAR LA TABLA DE EMPLEADOS ===
+# === ✨ SUPER FUNCIÓN MÁGICA AUTOMÁTICA PARA TODAS LAS TABLAS ===
 def crear_tablas_automaticas():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
         
-        # 1. Creamos la tabla de empleados si no existe
+        # 1. Tabla de Clientes Web
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS clientes_web (
+                id_cliente SERIAL PRIMARY KEY,
+                nombre VARCHAR(100),
+                usuario VARCHAR(50) UNIQUE,
+                contrasena VARCHAR(255)
+            );
+        """)
+
+        # 2. Tabla de Empleados
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS empleados (
                 id SERIAL PRIMARY KEY,
@@ -29,7 +39,41 @@ def crear_tablas_automaticas():
             );
         """)
         
-        # 2. Insertamos tus usuarios si la tabla está vacía
+        # 3. Tabla de Productos
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS productos (
+                id_producto SERIAL PRIMARY KEY,
+                nombre_producto VARCHAR(150),
+                marca VARCHAR(100),
+                precio_venta_actual NUMERIC(10, 2),
+                stock_actual INT
+            );
+        """)
+
+        # 4. Tabla de Ventas
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ventas (
+                id_venta SERIAL PRIMARY KEY,
+                fecha_hora TIMESTAMP,
+                forma_pago VARCHAR(50),
+                descuento NUMERIC(10, 2),
+                total NUMERIC(10, 2),
+                id_empleado INT
+            );
+        """)
+
+        # 5. Tabla de Detalle Ventas
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS detalle_ventas (
+                id_detalle SERIAL PRIMARY KEY,
+                id_venta INT,
+                id_producto INT,
+                cantidad INT,
+                precio_unitario NUMERIC(10, 2)
+            );
+        """)
+        
+        # Insertar empleados por defecto si la tabla está vacía
         cursor.execute("SELECT COUNT(*) FROM empleados;")
         if cursor.fetchone()[0] == 0:
             cursor.execute("""
@@ -39,15 +83,26 @@ def crear_tablas_automaticas():
                 ('Fatima', 'fatima_l', '1234', 'Administrador'),
                 ('Zoran', 'zoran_g', '1234', 'Administrador');
             """)
+
+        # Insertar algunos productos de prueba para que la papelería no esté vacía
+        cursor.execute("SELECT COUNT(*) FROM productos;")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("""
+                INSERT INTO productos (nombre_producto, marca, precio_venta_actual, stock_actual) VALUES
+                ('Cuaderno Raya A4', 'Scribe', 25.00, 50),
+                ('Lápiz HB', 'Dixon', 5.00, 100),
+                ('Goma de borrar', 'Factis', 8.50, 40),
+                ('Caja de Colores x24', 'Prismacolor', 120.00, 15);
+            """)
             
         conexion.commit()
         cursor.close()
         conexion.close()
-        print("¡Tablas y empleados creados con éxito en la nube!")
+        print("¡Todas las tablas estructurales creadas con éxito!")
     except Exception as e:
         print("Error al inicializar la base de datos:", e)
 
-# Ejecutamos la función para asegurarnos de que todo exista al arrancar
+# Ejecutamos la super función para asegurar que TODO exista en internet
 crear_tablas_automaticas()
 # ============================================================
 
@@ -175,7 +230,7 @@ def agregar_carrito():
             encontrado = True
             break
             
-    if not encontrado:
+    if not waterfront:
         carrito.append({'id_producto': id_producto, 'nombre': nombre, 'precio': precio, 'cantidad': 1})
         
     session['carrito'] = carrito
