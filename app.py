@@ -17,11 +17,15 @@ def crear_tablas_automaticas():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
-        # 🔥 ELIMINADOR COMPLETO: Copia y pega estas 4 líneas exactamente aquí abajo
+        
+        # 🔥 ELIMINADOR TOTAL: Limpia absolutamente todo en el orden correcto para no dejar bloqueos
         cursor.execute("DROP TABLE IF EXISTS detalle_ventas CASCADE;")
         cursor.execute("DROP TABLE IF EXISTS ventas CASCADE;")
         cursor.execute("DROP TABLE IF EXISTS productos CASCADE;")
         cursor.execute("DROP TABLE IF EXISTS empleados CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS clientes_web CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS proveedores CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS categorias CASCADE;")
         
         # 1. Tabla: Categorias
         cursor.execute("""
@@ -41,7 +45,7 @@ def crear_tablas_automaticas():
             );
         """)
 
-        # 3. Tabla de Empleados (Con la columna id_empleado correcta)
+        # 3. Tabla de Empleados
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS empleados (
                 id_empleado INT PRIMARY KEY,
@@ -114,15 +118,15 @@ def crear_tablas_automaticas():
             (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
         """)
         
-    # Insertar Empleados (Con IDs nuevos para saltar el candado de la base de datos)
+        # Insertar Empleados (Corregido y adentro de la función con sangría perfecta)
         cursor.execute("""
             INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
             (10, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
             (20, 'Suleima Salcedo', 'Analista', 'suleima_s', 'sule2026'),
             (30, 'Zoran', 'Mostrador', 'zoran_z', 'zoran123'),
-            (40, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123')
-            ON CONFLICT (usuario) DO NOTHING;
+            (40, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123');
         """)
+
         # Insertar Proveedores
         cursor.execute("""
             INSERT INTO proveedores (id_proveedor, nombre_empresa, contacto_nombre, telefono) VALUES
@@ -131,7 +135,7 @@ def crear_tablas_automaticas():
             (3, 'Scribe Mexico', 'Fernando Ruiz', '555-9012');
         """)
 
-        # Insertar Catálogo con IMÁGENES REALES Y CORREGIDAS (¡Cero Computadoras!)
+        # Insertar Catálogo con IMÁGENES REALES Y CORREGIDAS
         cursor.execute("""
             INSERT INTO productos (id_producto, codigo_barras, nombre_producto, marca, unidad_medida, stock_actual, stock_minimo, precio_venta_actual, estado, id_categoria, imagen_url) VALUES
             (101, '75010011', 'Cuaderno Profesional Raya 100hj', 'Scribe', 'Pieza', 45, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=400'),
@@ -257,7 +261,6 @@ def ver_tienda():
         conexion = conectar_bd()
         cursor = conexion.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        # Aquí traemos la columna imagen_url para que la plantilla la dibuje
         cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual, imagen_url FROM productos WHERE estado = 1 ORDER BY id_producto")
         lista_productos = cursor.fetchall()
         
