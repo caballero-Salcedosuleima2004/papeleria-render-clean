@@ -18,7 +18,7 @@ def crear_tablas_automaticas():
         conexion = conectar_bd()
         cursor = conexion.cursor()
         
-        # 🔥 ELIMINADOR TOTAL: Limpia absolutamente todo en el orden correcto para no dejar bloqueos
+        # 🔥 ELIMINADOR TOTAL OBLIGATORIO: Forzamos la limpieza absoluta en cada reinicio
         cursor.execute("DROP TABLE IF EXISTS detalle_ventas CASCADE;")
         cursor.execute("DROP TABLE IF EXISTS ventas CASCADE;")
         cursor.execute("DROP TABLE IF EXISTS productos CASCADE;")
@@ -66,7 +66,7 @@ def crear_tablas_automaticas():
             );
         """)
 
-        # 5. Tabla de Productos (Corregida con TEXT para que no corte los enlaces largos)
+        # 5. Tabla de Productos (Usando TEXT para soportar las URLs largas de Unsplash)
         cursor.execute("""
             CREATE TABLE productos (
                 id_producto INT PRIMARY KEY,
@@ -121,10 +121,10 @@ def crear_tablas_automaticas():
         # Insertar Empleados
         cursor.execute("""
             INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
-            (10, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
-            (20, 'Suleima Salcedo', 'Analista', 'suleima_s', 'sule2026'),
-            (30, 'Zoran', 'Mostrador', 'zoran_z', 'zoran123'),
-            (40, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123');
+            (1, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
+            (2, 'Suleima Salcedo', 'Analista', 'suleima_s', 'sule2026'),
+            (3, 'Zoran', 'Mostrador', 'zoran_z', 'zoran123'),
+            (4, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123');
         """)
 
         # Insertar Proveedores
@@ -135,7 +135,7 @@ def crear_tablas_automaticas():
             (3, 'Scribe Mexico', 'Fernando Ruiz', '555-9012');
         """)
 
-       # Insertar Catálogo con IMÁGENES REALES Y FILTRADAS DE PAPELERÍA (¡Cero errores de contexto!)
+        # Catálogo 100% corregido con imágenes reales de papelería
         cursor.execute("""
             INSERT INTO productos (id_producto, codigo_barras, nombre_producto, marca, unidad_medida, stock_actual, stock_minimo, precio_venta_actual, estado, id_categoria, imagen_url) VALUES
             (101, '75010011', 'Cuaderno Profesional Raya 100hj', 'Scribe', 'Pieza', 45, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&q=80'),
@@ -161,7 +161,7 @@ def crear_tablas_automaticas():
             (121, 'SRV001', 'Copia Fotostática Tamaño Carta', 'Generico', 'Pieza', 9999, 0, 1.50, 1, 8, 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400&q=80'),
             (122, 'SRV002', 'Impresión Color Láser', 'HP', 'Pieza', 9999, 0, 5.00, 1, 8, 'https://images.unsplash.com/photo-1588702547919-26089e690ecc?w=400&q=80'),
             (123, '75010223', 'Calculadora Científica 240 fun', 'Casio', 'Pieza', 10, 2, 299.00, 1, 9, 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80'),
-            (124, '75010234', 'Tijeras Escolares Acero Inox', 'Barrilito', 'Pieza', 30, 5, 16.00, 1, 9, 'https://images.unsplash.com/photo-1519751138087-5bf79df52d5b?w=400&q=80'),
+            (124, '75010234', 'Tijeras Escolares Acero Inox', 'Barrilito', 'Pieza', 30, 5, 16.00, 1, 9, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=400&q=80'),
             (125, '75010245', 'Goma de Borrar Migajón M20', 'Factis', 'Pieza', 100, 20, 5.50, 1, 9, 'https://images.unsplash.com/photo-1588702547923-7093a6c3ba33?w=400&q=80'),
             (126, '75010256', 'Sacapuntas de Metal Doble', 'Maped', 'Pieza', 55, 10, 12.00, 1, 9, 'https://images.unsplash.com/photo-1601987177651-8edfe6c20009?w=400&q=80'),
             (127, '75010267', 'Engrapadora de Media Tira', 'Pilot', 'Pieza', 8, 2, 85.00, 1, 9, 'https://images.unsplash.com/photo-1589187775328-882e91b314f1?w=400&q=80'),
@@ -307,7 +307,8 @@ def agregar_carrito():
             encontrado = True
             break
             
-    if not encontrar:
+    # ✅ CORREGIDO: Cambiado de "encontrar" a "encontrado" para que no de error crítico en Render
+    if not encontrado:
         carrito.append({'id_producto': id_producto, 'nombre': nombre, 'precio': precio, 'cantidad': 1})
         
     session['carrito'] = carrito
