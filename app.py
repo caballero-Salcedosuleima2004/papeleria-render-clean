@@ -378,16 +378,26 @@ def panel_vendedor():
         return f"<h1>Error</h1><p>{str(e)}</p>"
 
 @app.route('/actualizar_producto', methods=['POST'])
+@app.route('/actualizar_producto', methods=['POST'])
 def actualizar_producto():
     if 'usuario' not in session or session['rol'] == 'Cliente':
         return "<h1>⛔ Acceso Denegado</h1>"
+    
     id_producto = request.form['id_producto']
     nuevo_precio = float(request.form['precio'])
     nuevo_stock = int(request.form['stock'])
+    nueva_imagen = request.form['imagen_url']  # <-- Recibe el link que tú pegues en la pantalla
+    
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
-        cursor.execute("UPDATE productos SET precio_venta_actual = %s, stock_actual = %s WHERE id_producto = %s", (nuevo_precio, nuevo_stock, id_producto))
+        # Modificamos la consulta para que también guarde la URL de la imagen en Postgres
+        cursor.execute("""
+            UPDATE productos 
+            SET precio_venta_actual = %s, stock_actual = %s, imagen_url = %s 
+            WHERE id_producto = %s
+        """, (nuevo_precio, nuevo_stock, nueva_imagen, id_producto))
+        
         conexion.commit()
         cursor.close()
         conexion.close()
