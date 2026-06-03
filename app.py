@@ -161,7 +161,7 @@ def crear_tablas_automaticas():
             (121, 'SRV001', 'Copia Fotostática Tamaño Carta', 'Generico', 'Pieza', 9999, 0, 1.50, 1, 8, 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400&q=80'),
             (122, 'SRV002', 'Impresión Color Láser', 'HP', 'Pieza', 9999, 0, 5.00, 1, 8, 'https://images.unsplash.com/photo-1588702547919-26089e690ecc?w=400&q=80'),
             (123, '75010223', 'Calculadora Científica 240 fun', 'Casio', 'Pieza', 10, 2, 299.00, 1, 9, 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80'),
-            (124, '75010234', 'Tijeras Escolares Acero Inox', 'Barrilito', 'Pieza', 30, 5, 16.00, 1, 9, 'https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=400&q=80'),
+            (124, '75010234', 'Tijeras Escolares Acero Inox', 'Barrilito', 'Pieza', 30, 5, 16.00, 1, 9, 'https://images.unsplash.com/photo-1519751138087-5bf79df52d5b?w=400&q=80'),
             (125, '75010245', 'Goma de Borrar Migajón M20', 'Factis', 'Pieza', 100, 20, 5.50, 1, 9, 'https://images.unsplash.com/photo-1588702547923-7093a6c3ba33?w=400&q=80'),
             (126, '75010256', 'Sacapuntas de Metal Doble', 'Maped', 'Pieza', 55, 10, 12.00, 1, 9, 'https://images.unsplash.com/photo-1601987177651-8edfe6c20009?w=400&q=80'),
             (127, '75010267', 'Engrapadora de Media Tira', 'Pilot', 'Pieza', 8, 2, 85.00, 1, 9, 'https://images.unsplash.com/photo-1589187775328-882e91b314f1?w=400&q=80'),
@@ -176,7 +176,8 @@ def crear_tablas_automaticas():
     except Exception as e:
         print("Error al inicializar la base de datos:", e)
 
-crear_tablas_automaticas()
+# 🛑 COMENTADO PARA SIEMPRE: Ya no borrará tus imágenes ni tus usuarios registrados al reiniciar
+# crear_tablas_automaticas()
 # ============================================================
 
 @app.route('/', methods=['GET', 'POST'])
@@ -307,7 +308,6 @@ def agregar_carrito():
             encontrado = True
             break
             
-    # ✅ CORREGIDO: Cambiado de "encontrar" a "encontrado" para que no de error crítico en Render
     if not encontrado:
         carrito.append({'id_producto': id_producto, 'nombre': nombre, 'precio': precio, 'cantidad': 1})
         
@@ -359,7 +359,8 @@ def panel_vendedor():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual FROM productos ORDER BY id_producto")
+        # ✅ Agregado: imagen_url para que cargue los links en tu tabla de vendedor
+        cursor.execute("SELECT id_producto, nombre_producto, marca, precio_venta_actual, stock_actual, imagen_url FROM productos ORDER BY id_producto")
         productos = cursor.fetchall()
         
         cursor.execute("""
@@ -378,7 +379,6 @@ def panel_vendedor():
         return f"<h1>Error</h1><p>{str(e)}</p>"
 
 @app.route('/actualizar_producto', methods=['POST'])
-@app.route('/actualizar_producto', methods=['POST'])
 def actualizar_producto():
     if 'usuario' not in session or session['rol'] == 'Cliente':
         return "<h1>⛔ Acceso Denegado</h1>"
@@ -386,12 +386,11 @@ def actualizar_producto():
     id_producto = request.form['id_producto']
     nuevo_precio = float(request.form['precio'])
     nuevo_stock = int(request.form['stock'])
-    nueva_imagen = request.form['imagen_url']  # <-- Recibe el link que tú pegues en la pantalla
+    nueva_imagen = request.form['imagen_url']
     
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
-        # Modificamos la consulta para que también guarde la URL de la imagen en Postgres
         cursor.execute("""
             UPDATE productos 
             SET precio_venta_actual = %s, stock_actual = %s, imagen_url = %s 
