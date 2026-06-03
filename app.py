@@ -108,16 +108,15 @@ def crear_tablas_automaticas():
             (4, 'Dibujo y Arte'), (5, 'Archiveros y Carpetas'), (6, 'Pegamentos y Cintas'),
             (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
         """)
-
-        # Insertar Empleados
+        
+       # Insertar Empleados (Actualizado con tu Profe, Tú, Zoran y Fátima)
         cursor.execute("""
             INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
-            (1, 'Luis Ramirez Torres', 'Propietario', 'luis_owner', 'admin123'),
-            (2, 'Andres Hernandez', 'Analista', 'andres_ana', 'analista2026'),
-            (3, 'Juan Perez', 'Mostrador', 'juanp', 'mostrador1'),
-            (4, 'Maria Gomez', 'Mostrador', 'mariag', 'mostrador2');
+            (1, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
+            (2, 'Suleima Salcedo', 'Analista', 'suleima_s', 'sule2026'),
+            (3, 'Zoran', 'Mostrador', 'zoran_z', 'zoran123'),
+            (4, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123');
         """)
-
         # Insertar Proveedores
         cursor.execute("""
             INSERT INTO proveedores (id_proveedor, nombre_empresa, contacto_nombre, telefono) VALUES
