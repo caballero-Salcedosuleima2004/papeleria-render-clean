@@ -17,6 +17,11 @@ def crear_tablas_automaticas():
     try:
         conexion = conectar_bd()
         cursor = conexion.cursor()
+        # 🔥 ELIMINADOR COMPLETO: Copia y pega estas 4 líneas exactamente aquí abajo
+        cursor.execute("DROP TABLE IF EXISTS detalle_ventas CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS ventas CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS productos CASCADE;")
+        cursor.execute("DROP TABLE IF EXISTS empleados CASCADE;")
         
         # 1. Tabla: Categorias
         cursor.execute("""
