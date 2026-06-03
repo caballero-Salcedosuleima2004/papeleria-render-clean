@@ -29,7 +29,7 @@ def crear_tablas_automaticas():
         
         # 1. Tabla: Categorias
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS categorias (
+            CREATE TABLE categorias (
                 id_categoria INT PRIMARY KEY,
                 nombre_categoria VARCHAR(50) NOT NULL
             );
@@ -37,7 +37,7 @@ def crear_tablas_automaticas():
 
         # 2. Tabla de Clientes Web
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS clientes_web (
+            CREATE TABLE clientes_web (
                 id_cliente SERIAL PRIMARY KEY,
                 nombre VARCHAR(100),
                 usuario VARCHAR(50) UNIQUE,
@@ -47,7 +47,7 @@ def crear_tablas_automaticas():
 
         # 3. Tabla de Empleados
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS empleados (
+            CREATE TABLE empleados (
                 id_empleado INT PRIMARY KEY,
                 nombre VARCHAR(100) NOT NULL,
                 rol VARCHAR(50) NOT NULL,
@@ -58,7 +58,7 @@ def crear_tablas_automaticas():
         
         # 4. Tabla: Proveedores
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS proveedores (
+            CREATE TABLE proveedores (
                 id_proveedor INT PRIMARY KEY,
                 nombre_empresa VARCHAR(100) NOT NULL,
                 contacto_nombre VARCHAR(100) NOT NULL,
@@ -66,9 +66,9 @@ def crear_tablas_automaticas():
             );
         """)
 
-        # 5. Tabla de Productos
+        # 5. Tabla de Productos (Corregida con TEXT para que no corte los enlaces largos)
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS productos (
+            CREATE TABLE productos (
                 id_producto INT PRIMARY KEY,
                 codigo_barras VARCHAR(50) NOT NULL,
                 nombre_producto VARCHAR(100) NOT NULL,
@@ -79,14 +79,14 @@ def crear_tablas_automaticas():
                 precio_venta_actual NUMERIC(10, 2) NOT NULL,
                 estado INT NOT NULL,
                 id_categoria INT NOT NULL,
-                imagen_url VARCHAR(255) DEFAULT 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400',
+                imagen_url TEXT DEFAULT 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400',
                 FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria)
             );
         """)
 
         # 6. Tabla de Ventas
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ventas (
+            CREATE TABLE ventas (
                 id_venta SERIAL PRIMARY KEY,
                 fecha_hora TIMESTAMP,
                 forma_pago VARCHAR(50),
@@ -98,7 +98,7 @@ def crear_tablas_automaticas():
 
         # 7. Tabla de Detalle Ventas
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS detalle_ventas (
+            CREATE TABLE detalle_ventas (
                 id_detalle SERIAL PRIMARY KEY,
                 id_venta INT,
                 id_producto INT,
@@ -118,7 +118,7 @@ def crear_tablas_automaticas():
             (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
         """)
         
-        # Insertar Empleados (Corregido y adentro de la función con sangría perfecta)
+        # Insertar Empleados
         cursor.execute("""
             INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
             (10, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
@@ -135,7 +135,7 @@ def crear_tablas_automaticas():
             (3, 'Scribe Mexico', 'Fernando Ruiz', '555-9012');
         """)
 
-        # Insertar Catálogo con IMÁGENES REALES Y CORREGIDAS (¡Cero Computadoras y 100% asociadas!)
+        # Insertar Catálogo con IMÁGENES REALES Y CORREGIDAS
         cursor.execute("""
             INSERT INTO productos (id_producto, codigo_barras, nombre_producto, marca, unidad_medida, stock_actual, stock_minimo, precio_venta_actual, estado, id_categoria, imagen_url) VALUES
             (101, '75010011', 'Cuaderno Profesional Raya 100hj', 'Scribe', 'Pieza', 45, 10, 25.00, 1, 1, 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&q=80'),
@@ -307,7 +307,7 @@ def agregar_carrito():
             encontrado = True
             break
             
-    if not encontrado:
+    if not encontrar:
         carrito.append({'id_producto': id_producto, 'nombre': nombre, 'precio': precio, 'cantidad': 1})
         
     session['carrito'] = carrito
