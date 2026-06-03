@@ -114,13 +114,14 @@ def crear_tablas_automaticas():
             (7, 'Geometría y Reglas'), (8, 'Servicios Digitales'), (9, 'Oficina General'), (10, 'Regalos y Envolturas');
         """)
         
-       # Insertar Empleados (Actualizado con tu Profe, Tú, Zoran y Fátima)
+    # Insertar Empleados (Con IDs nuevos para saltar el candado de la base de datos)
         cursor.execute("""
             INSERT INTO empleados (id_empleado, nombre, rol, usuario, contrasena) VALUES
-            (1, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
-            (2, 'Suleima Salcedo', 'Analista', 'suleima_s', 'sule2026'),
-            (3, 'Zoran', 'Mostrador', 'zoran_z', 'zoran123'),
-            (4, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123');
+            (10, 'Profesor Andres', 'Propietario', 'andres_a', 'profe123'),
+            (20, 'Suleima Salcedo', 'Analista', 'suleima_s', 'sule2026'),
+            (30, 'Zoran', 'Mostrador', 'zoran_z', 'zoran123'),
+            (40, 'Fatima', 'Mostrador', 'fatima_f', 'fatima123')
+            ON CONFLICT (usuario) DO NOTHING;
         """)
         # Insertar Proveedores
         cursor.execute("""
